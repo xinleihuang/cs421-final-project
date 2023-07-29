@@ -1,9 +1,57 @@
 import math
 import multiprocessing
+from .sequential import find_prime_under_with_seed
 from typing import Tuple
 
 
 class PipelineConcurrency:
+    def __init__(self, upper_limit: int) -> None:
+        self.upper_limit = upper_limit
+        self.processors = min(multiprocessing.cpu_count(), self.upper_limit)
+
+    def _stage_0(self, target: int) -> int:
+        for val in range(2, int(math.sqrt(target)) + 1):
+            if target % val == 0:
+                return 0
+        return target
+
+    def _stage_1(self, prime_seed: int) -> list[bool]:
+        is_composite = [False for _ in range(self.upper_limit + 1)]
+        
+        # loop through numbers in [2, upper_limit]
+        # to identify all composites
+        for num in range(prime_seed, self.upper_limit + 1):
+            if is_composite[num]:
+                continue
+            for factor in range(num, self.upper_limit // num + 1):
+                is_composite[num*factor] = True
+        return is_composite
+
+    def execute(self) -> None:
+        with multiprocessing.Pool(processes=self.processors) as pool:
+            seeds, i = [], 2
+            while len(seeds) < self.processors and i < self.upper_limit:
+                segments = list(range(i, min(i + self.processors, self.upper_limit)))
+                rlts = pool.map(self._stage_0, segments)
+                for target in rlts:
+                    if target:
+                        seeds.append(target)
+                i += self.processors
+
+            composite_segments = pool.map(self._stage_1, seeds)
+            primes = []
+            for i in range(2, self.upper_limit+1):
+                val = False
+                for segment in composite_segments:
+                    if segment[i]:
+                        val = True
+                        break
+                if not val:
+                    primes.append(i)
+            return primes
+
+
+class PipelineConcurrencySlow:
     def __init__(self, upper_limit: int) -> None:
         self.upper_limit = upper_limit
         self.is_composite = [False for _ in range(upper_limit + 1)]
