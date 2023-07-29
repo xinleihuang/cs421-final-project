@@ -9,6 +9,11 @@ class PipelineConcurrency:
         self.upper_limit = upper_limit
         self.processors = min(multiprocessing.cpu_count(), self.upper_limit)
 
+    """
+    determine whether a num is a prime
+    return 0 if it's a composite
+    return the number itself if it's a prime
+    """
     def _stage_0(self, target: int) -> int:
         for val in range(2, int(math.sqrt(target)) + 1):
             if target % val == 0:
@@ -20,6 +25,7 @@ class PipelineConcurrency:
         
         # loop through numbers in [2, upper_limit]
         # to identify all composites
+        # ideally num must be a prime, expanding from a prime like num * num, num * (num+1) ,,,
         for num in range(prime_seed, self.upper_limit + 1):
             if is_composite[num]:
                 continue
