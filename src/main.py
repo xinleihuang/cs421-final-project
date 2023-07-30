@@ -5,6 +5,7 @@ from merge_sort.sequential import merge_sort_seq
 from merge_sort.divide_conquer import merge_sort_concurrent
 from prime_sieve import sequential
 from prime_sieve.pipeline import PipelineConcurrency
+from prime_sieve.pipeline_shm import PipelineConcurrencyShm
 
 
 def prime_sieve() -> None:
@@ -20,6 +21,11 @@ def prime_sieve() -> None:
     primes_by_pipeline = pipeline_concurrency.execute()
     et_sequential = time.time()
     print('concurrent time@ms=', (et_sequential - st_sequential) * 1000, '#primes=', len(primes_by_pipeline))
+    pipeline_concurrency_shm = PipelineConcurrencyShm(upper_limit=int(upper_limit))
+    st_sequential = time.time()
+    primes_by_pipeline = pipeline_concurrency_shm.execute()
+    et_sequential = time.time()
+    print('concurrent time with shared memory@ms=', (et_sequential - st_sequential) * 1000, '#primes=', len(primes_by_pipeline))
 
 
 def merge_sort() -> None:
