@@ -1,9 +1,17 @@
 import math
 import multiprocessing
-from .sequential import find_prime_under_with_seed
 from typing import Tuple
 
 
+"""
+implement Sieve of Eratosthenes via pipeline concurrency without shared memory
+it splits the process into two stages
+stage_0: find the first k primes starting in [2, upper_limit] in brute force
+stage_1: for each prime found in stage_0, start the sieve process from it. Assume
+         there are 3 prime seeds to start from, three subtasks will be created running
+         concurrently, but the total number of concurrent tasks cannot exceed
+         the number of CPU's
+"""
 class PipelineConcurrency:
     def __init__(self, upper_limit: int) -> None:
         self.upper_limit = upper_limit
@@ -20,6 +28,10 @@ class PipelineConcurrency:
                 return 0
         return target
 
+    """
+    identify all composites in [prime_seed, upper_limit]
+    return a boolean list, True -> composite, False -> prime
+    """
     def _stage_1(self, prime_seed: int) -> list[bool]:
         is_composite = [False for _ in range(self.upper_limit + 1)]
         
@@ -35,17 +47,28 @@ class PipelineConcurrency:
 
     def execute(self) -> None:
         with multiprocessing.Pool(processes=self.processors) as pool:
+            """
+            find first {self.processors} primes concurrently
+            each prime will be used as the starting point of sieve
+            """
             seeds, i = [], 2
             while len(seeds) < self.processors and i < self.upper_limit:
                 segments = list(range(i, min(i + self.processors, self.upper_limit)))
+                # apply self._stage_0 to each item in segments array
+                # and run them concurrently
                 rlts = pool.map(self._stage_0, segments)
                 for target in rlts:
                     if target:
                         seeds.append(target)
                 i += self.processors
 
+            # run self._stage_1 against each prime seed concurrently
             composite_segments = pool.map(self._stage_1, seeds)
             primes = []
+            """
+            for each number in [2, upper_limit], if none of composite_segment says it's a composite,
+            this number is a prime
+            """
             for i in range(2, self.upper_limit+1):
                 val = False
                 for segment in composite_segments:
@@ -55,36 +78,3 @@ class PipelineConcurrency:
                 if not val:
                     primes.append(i)
             return primes
-
-
-class PipelineConcurrencySlow:
-    def __init__(self, upper_limit: int) -> None:
-        self.upper_limit = upper_limit
-        self.is_composite = [False for _ in range(upper_limit + 1)]
-
-    def _stage_0(self, batch: int) -> None:
-        self.segments = [(i+1, min(i + batch, self.upper_limit)) for i in range(1, self.upper_limit, batch)]
-
-    def _stage_1(self, l_boundary: int, r_boundary: int) -> Tuple[int, list[bool]]:
-        is_composite = [False for _ in range(r_boundary - l_boundary + 1)]
-        for factor in range(2, int(math.sqrt(r_boundary)) + 1):
-            for num in range(max(factor * factor, (l_boundary + factor - 1) // factor * factor), r_boundary + 1, factor):
-                is_composite[num - l_boundary] = True
-        return l_boundary, is_composite
-
-    def _stage_2(self, l_boundary: int, is_composite: list[bool]) -> None:
-        for i in range(len(is_composite)):
-            if is_composite[i]:
-                self.is_composite[l_boundary + i] = True
-
-    def execute(self) -> None:
-        num_processes = min(multiprocessing.cpu_count(), self.upper_limit)
-        batch = self.upper_limit // num_processes
-
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            self._stage_0(batch=batch)
-            rlts = pool.starmap(self._stage_1, self.segments)
-            for l_boundary, is_composiste in rlts:
-                self._stage_2(l_boundary=l_boundary, is_composite=is_composiste)
-            return [x for x in range(2, self.upper_limit + 1) if not self.is_composite[x]]
-

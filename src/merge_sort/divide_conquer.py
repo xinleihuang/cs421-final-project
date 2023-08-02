@@ -1,8 +1,13 @@
-# merge sort concurrently
+"""
+Merge Sort via divide-conquer concurrently
+"""
 import multiprocessing
 from typing import Tuple
 
 
+"""
+merge two sorted lists
+"""
 def merge(left: list[int], right: list[int]) -> list[int]:
     if not right:
         return left
@@ -25,6 +30,16 @@ def merge(left: list[int], right: list[int]) -> list[int]:
     return rlt
 
 
+"""
+the list is divided into smaller ones to sort and merge recursively
+when only one processor is available. Recursive calls continue until
+the size of the list is 1, then merging process starts from bottom to top.
+Deep down this can be treated as series of merging tasks. With multiple
+processors, this problem can be solved by
+    1). convert list[int] to list[list[int]] wrapping each integer in a list
+    2). merge child lists 2*i and 2*i + 1, where i = 0, 1, ..., n//2, concurrently
+    3). repeat step 2 until only one list left, which is the sorted one
+"""
 def merge_sort_concurrent(nums: list[int]) -> list[int]:
     N = len(nums)
     buckets = [[x] for x in nums]

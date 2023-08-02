@@ -1,4 +1,7 @@
-# merge sort in sequential style
+"""
+Merge sort by sorting the list into 2 smaller ones
+and merging sorted together recursively
+"""
 
 def merge(left: list[int], right: list[int]) -> list[int]:
     rlt = []
@@ -22,7 +25,14 @@ def merge_sort_seq(nums: list[int]) -> list[int]:
     l = len(nums)
     if l < 2:
         return nums
-    left = merge_sort_seq(nums[:l//2])
-    right = merge_sort_seq(nums[l//2:])
-    return merge(left, right)
+    # left = merge_sort_seq(nums[:l//2])
+    # right = merge_sort_seq(nums[l//2:])
+    # return merge(left, right)
+    buckets = [[x] for x in nums]
+    while len(buckets) > 1:
+        another = []
+        for i in range(0, len(buckets), 2):
+            another.append(merge(buckets[i], buckets[i+1] if i+1 < len(buckets) else []))
+        buckets = another
+    return buckets[0]
 
