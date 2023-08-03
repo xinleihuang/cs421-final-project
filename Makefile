@@ -7,3 +7,9 @@ init:
 
 run:
 		python src/main.py
+
+test:
+		python -m unittest -v
+
+performance:
+		python -m src.performance.execution_time

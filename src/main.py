@@ -37,9 +37,9 @@ def merge_sort() -> None:
     et_sort_cc = time.time()
     print('concurrent time@ms=', (et_sort_cc - st_sort_cc) * 1000)
     st_sort_seq = time.time()
-    seq_sorted = merge_sort_seq(numbers)
+    merge_sort_seq(numbers)
     et_sort_seq = time.time()
-    print('sequential time@ms=', (et_sort_seq - st_sort_seq) * 1000, seq_sorted)
+    print('sequential time@ms=', (et_sort_seq - st_sort_seq) * 1000)
 
 
 def main() -> None:

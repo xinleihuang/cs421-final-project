@@ -1,3 +1,4 @@
+import inquirer
 import sys
 import os
 
@@ -74,7 +75,23 @@ def performance_test_prime_sieve():
     plt.show()
 
 
+def main() -> None:
+    question = [
+        inquirer.List('algo',
+                      message="please select an algorithm to test:",
+                      choices=['prime sieve', 'merge sort'])
+    ]
+    algo = inquirer.prompt(question)['algo']
+    print("start performance tests agains {}".format(algo))
+    print("it may take 1~2 minutes...")
+    if algo == 'prime sieve':
+        print("start performance tests agains prime sieve")
+        print("it may take 1~2 minutes...")
+        performance_test_prime_sieve()
+    else:
+        performance_test_merge_sort()
+
+
 if __name__ == '__main__':
-    # performance_test_merge_sort()
-    performance_test_prime_sieve()
+    main()
     
