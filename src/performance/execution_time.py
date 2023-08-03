@@ -64,40 +64,9 @@ def performance_test_prime_sieve():
         print("#num={} done".format(n))
 
     plt.plot(x, concurrent_times, label='concurrent')
-    # plt.plot(x, concurrent_alten_times, label='current_alt')
-    plt.plot(x, concurrent_shm_times, label='current_shm')
-    plt.plot(x, sequential_times, label='sequential')
-    plt.legend()
-
-    plt.xlabel("prime upper limit")
-    plt.ylabel("execution time ms")
-    plt.show()
-
-
-def performance_test_prime_sieve_front():
-    concurrent_times, concurrent_alten_times, concurrent_shm_times, sequential_times = [], [], [], []
-    x = []
-    for n in range(2, 50):
-        x.append(n)
-        st = time.time()
-        PipelineConcurrency(n).execute()
-        concurrent_times.append((time.time() - st) * 1000)
-        st = time.time()
-        st = time.time()
-        PipelineConcurrencyAlten(n).execute()
-        concurrent_alten_times.append((time.time() - st) * 1000)
-        st = time.time()
-        PipelineConcurrencyShm(n).execute()
-        concurrent_shm_times.append((time.time() - st) * 1000)
-        st = time.time()
-        find_prime_under(n)
-        sequential_times.append((time.time() - st) * 1000)
-        print("#num={} done".format(n))
-
-    plt.plot(x, concurrent_times, label='concurrent')
     plt.plot(x, concurrent_alten_times, label='current_alt')
     plt.plot(x, concurrent_shm_times, label='current_shm')
-    plt.plot(x, sequential_times, label='sequential', color="black")
+    plt.plot(x, sequential_times, label='sequential')
     plt.legend()
 
     plt.xlabel("prime upper limit")
@@ -108,5 +77,4 @@ def performance_test_prime_sieve_front():
 if __name__ == '__main__':
     # performance_test_merge_sort()
     performance_test_prime_sieve()
-    # performance_test_prime_sieve_front()
     
